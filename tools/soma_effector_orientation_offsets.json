@@ -1,0 +1,22 @@
+{
+  "description": "Editable fixed orientation offsets for SOMA mesh conversion. Values are degrees in the order below. pre_ik_offsets_degrees is applied to local joint rotations before the hand/foot IK pass; post_ik_offsets_degrees is applied to hand/foot global orientations after IK.",
+  "order": "ZYX",
+  "post_ik_space": "local",
+  "pre_ik_offsets_degrees": {
+    "Root": [0.0, 0.0, 0.0],
+    "Hips": [0.0, 0.0, 0.0],
+    "Spine1": [0.0, 0.0, 0.0],
+    "Spine2": [0.0, 0.0, 0.0],
+    "Chest": [0.0, 5.0, 0.0],
+    "Neck1": [0.0, 0.0, 0.0],
+    "Head": [0.0, 0.0, 0.0]
+  },
+  "post_ik_offsets_degrees": {
+    "LeftHand": [0.0, 0.0, 0.0],
+    "RightHand": [0.0, 0.0, 0.0],
+    "LeftFoot": [0.0, 0.0, 0.0],
+    "RightFoot": [0.0, 0.0, 0.0]
+  }
+}
+
+
