@@ -22,6 +22,7 @@ from pathlib import Path
 DEFAULT_TEMPLATE = Path("assets/motions/bvh/Neutral_walk_forward_002__A057.bvh")
 DEFAULT_REFERENCE = Path("soma_retargeter/configs/soma/soma_zero_frame0.bvh")
 DEFAULT_ORIENTATION_OFFSETS = Path("tools/soma_effector_orientation_offsets.json")
+DEFAULT_SOURCE_REFERENCE_SECONDS = 1.0
 ROTATION_CHANNELS = ("Zrotation", "Yrotation", "Xrotation")
 
 
@@ -96,6 +97,11 @@ END_EFFECTOR_IK_CHAINS = (
     (("RightArm", "RightForeArm", "RightHand"), ("RightArm", "RightForeArm", "RightHand")),
     (("LeftLeg", "LeftShin", "LeftFoot"), ("LeftUpLeg", "LeftLeg", "LeftFoot")),
     (("RightLeg", "RightShin", "RightFoot"), ("RightUpLeg", "RightLeg", "RightFoot")),
+)
+
+
+TORSO_IK_CHAINS = (
+    (("Spine2", "Chest", "Neck1"), ("Spine2", "Chest", "Neck")),
 )
 
 
@@ -682,23 +688,71 @@ def load_orientation_offsets(
     return pre_ik_offsets, post_ik_offsets, post_ik_space
 
 
-def zero_rotation_reference_row(data: BVHData) -> list[float]:
-    """Build a synthetic rest-pose row from the BVH hierarchy.
+def orthonormalized_matrix(
+    matrix: list[list[float]],
+    fallback: list[list[float]],
+) -> list[list[float]]:
+    x_axis = [matrix[0][0], matrix[1][0], matrix[2][0]]
+    y_axis = [matrix[0][1], matrix[1][1], matrix[2][1]]
+    if vec_length(x_axis) < 1e-9:
+        return fallback
 
-    BVH rotations are authored relative to the hierarchy rest pose. When we do
-    not have a dedicated static FZMotion T-pose clip, an all-zero rotation row
-    is a safer source reference than using the first frame of an arbitrary
-    motion.
-    """
+    x_axis = vec_normalize(x_axis)
+    y_axis = vec_sub(y_axis, vec_mul(x_axis, vec_dot(y_axis, x_axis)))
+    if vec_length(y_axis) < 1e-9:
+        return fallback
+
+    y_axis = vec_normalize(y_axis)
+    z_axis = vec_cross(x_axis, y_axis)
+    if vec_length(z_axis) < 1e-9:
+        return fallback
+
+    z_axis = vec_normalize(z_axis)
+    y_axis = vec_cross(z_axis, x_axis)
+    return [
+        [x_axis[0], y_axis[0], z_axis[0]],
+        [x_axis[1], y_axis[1], z_axis[1]],
+        [x_axis[2], y_axis[2], z_axis[2]],
+    ]
+
+
+def averaged_rotation_matrix(
+    frames: list[list[float]],
+    joint: Joint,
+) -> list[list[float]]:
+    matrices = [local_rotation_matrix(row, joint) for row in frames]
+    averaged = [
+        [
+            sum(matrix[row_index][col] for matrix in matrices) / len(matrices)
+            for col in range(3)
+        ]
+        for row_index in range(3)
+    ]
+    return orthonormalized_matrix(averaged, matrices[0])
+
+
+def initial_motion_reference_row(data: BVHData, seconds: float) -> list[float]:
+    """Estimate the source T-pose from a static prefix of the motion clip."""
+    if seconds <= 0.0:
+        raise ValueError("--source-reference-seconds must be greater than 0")
+
+    reference_frame_count = max(1, round(seconds / float(data.frame_time)))
+    frames = data.motion_rows[: min(reference_frame_count, len(data.motion_rows))]
     row = [0.0] * data.channel_count
+
     for joint in data.joints:
+        reference_rotation = matrix_to_zyx_euler(averaged_rotation_matrix(frames, joint))
+        rotation_index = 0
         for offset, channel in enumerate(joint.channels):
-            if channel == "Xposition":
-                row[joint.channel_start + offset] = joint.offset[0]
-            elif channel == "Yposition":
-                row[joint.channel_start + offset] = joint.offset[1]
-            elif channel == "Zposition":
-                row[joint.channel_start + offset] = joint.offset[2]
+            if "rotation" in channel:
+                row[joint.channel_start + offset] = reference_rotation[rotation_index]
+                rotation_index += 1
+            elif "position" in channel:
+                row[joint.channel_start + offset] = (
+                    sum(frame[joint.channel_start + offset] for frame in frames)
+                    / len(frames)
+                )
+
     return row
 
 
@@ -1085,6 +1139,17 @@ def soma_geometry_row(
 
     if end_effector_ik:
         source_positions, source_rotations = compute_global_positions_and_rotations(source, row)
+        for target_chain, source_chain in TORSO_IK_CHAINS:
+            apply_two_bone_ik(
+                source_positions,
+                source_rotations,
+                target,
+                target_chain,
+                source_chain,
+                local_positions,
+                local_rotations,
+            )
+
         for target_chain, source_chain in END_EFFECTOR_IK_CHAINS:
             apply_two_bone_ik(
                 source_positions,
@@ -1269,6 +1334,7 @@ def summarize_conversion(
     palm_fold: bool,
     use_source_geometry: bool,
     source_reference: BVHData | None,
+    source_reference_seconds: float,
 ) -> None:
     used_sources = {name for name in mapping.values() if name is not None}
     if palm_fold:
@@ -1304,7 +1370,7 @@ def summarize_conversion(
             + (
                 str(source_reference.path)
                 if source_reference is not None
-                else "synthetic zero-rotation rest pose"
+                else f"average of first {source_reference_seconds:g}s of source motion"
             )
         )
     print(f"  reference-filled target joints ({len(zero_targets)}): {', '.join(zero_targets)}")
@@ -1342,6 +1408,7 @@ def convert_file(
     target_template: BVHData,
     target_reference: BVHData,
     source_reference: BVHData | None,
+    source_reference_seconds: float,
     overwrite: bool,
     dry_run: bool,
     palm_fold: bool,
@@ -1361,7 +1428,7 @@ def convert_file(
     source_reference_row = (
         source_reference.motion_rows[0]
         if source_reference is not None
-        else zero_rotation_reference_row(source)
+        else initial_motion_reference_row(source, source_reference_seconds)
     )
     out_path = output_path_for(source_path, input_root, output_root, single_file)
 
@@ -1377,6 +1444,7 @@ def convert_file(
         palm_fold,
         use_source_geometry,
         source_reference,
+        source_reference_seconds,
     )
 
     if dry_run:
@@ -1421,8 +1489,17 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help=(
             "Optional YM/FZ static rest-pose BVH. Used by --soma-geometry to "
-            "compute source rotation deltas. If omitted, an all-zero rotation "
-            "row from each source hierarchy is used."
+            "compute source rotation deltas. If omitted, the reference is "
+            "estimated from the start of each source motion."
+        ),
+    )
+    parser.add_argument(
+        "--source-reference-seconds",
+        type=float,
+        default=DEFAULT_SOURCE_REFERENCE_SECONDS,
+        help=(
+            "Seconds from the start of each source motion to average as the "
+            "source T-pose when --source-reference is omitted."
         ),
     )
     parser.add_argument("--file", type=Path, default=None)
@@ -1455,8 +1532,8 @@ def parse_args() -> argparse.Namespace:
         "--no-end-effector-ik",
         action="store_true",
         help=(
-            "Disable the hand/foot two-bone IK pass used by --soma-geometry "
-            "to keep SOMA mesh limbs aligned with source end-effectors."
+            "Disable the torso/hand/foot two-bone IK pass used by "
+            "--soma-geometry to keep the SOMA mesh aligned with source motion."
         ),
     )
     parser.add_argument(
@@ -1510,6 +1587,7 @@ def main() -> int:
                 target_template=target_template,
                 target_reference=target_reference,
                 source_reference=source_reference,
+                source_reference_seconds=args.source_reference_seconds,
                 overwrite=args.overwrite,
                 dry_run=args.dry_run,
                 palm_fold=not args.no_palm_fold,
