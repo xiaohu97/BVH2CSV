@@ -883,6 +883,101 @@ def corrected_rotation_values(
     return matrix_to_zyx_euler(corrected_matrix)
 
 
+def build_global_bind_offsets(
+    source: BVHData,
+    target: BVHData,
+    target_reference: BVHData,
+    source_reference_row: list[float],
+    mapping: dict[str, str | None],
+) -> tuple[dict[str, list[list[float]]], dict[str, list[list[float]]]]:
+    source_positions, source_reference_globals = compute_global_positions_and_rotations(
+        source, source_reference_row
+    )
+    target_bind_globals: dict[str, list[list[float]]] = {}
+    target_bind_locals: dict[str, list[list[float]]] = {}
+
+    for target_joint in target.joints:
+        parent_global = (
+            target_bind_globals[target_joint.parent]
+            if target_joint.parent is not None
+            else mat_identity()
+        )
+        candidate_global = matmul(
+            parent_global,
+            reference_rotation_matrix(target_reference, target_joint.name),
+        )
+        source_name = mapping[target_joint.name]
+        if source_name is not None:
+            for child in target.joints:
+                if child.parent != target_joint.name:
+                    continue
+                source_child = mapping[child.name]
+                if source_child is None:
+                    continue
+                current_direction = mat_vec_mul(candidate_global, list(child.offset))
+                desired_direction = vec_sub(
+                    source_positions[source_child],
+                    source_positions[source_name],
+                )
+                candidate_global = matmul(
+                    rotation_between_vectors(current_direction, desired_direction),
+                    candidate_global,
+                )
+                break
+
+        target_bind_globals[target_joint.name] = candidate_global
+        target_bind_locals[target_joint.name] = matmul(
+            mat_transpose(parent_global), candidate_global
+        )
+
+    offsets: dict[str, list[list[float]]] = {}
+    for target_name, source_name in mapping.items():
+        if source_name is None:
+            continue
+        offsets[target_name] = matmul(
+            mat_transpose(source_reference_globals[source_name]),
+            target_bind_globals[target_name],
+        )
+    return offsets, target_bind_locals
+
+
+def global_bind_local_rotations(
+    row: list[float],
+    source: BVHData,
+    target: BVHData,
+    target_reference: BVHData,
+    mapping: dict[str, str | None],
+    global_bind_offsets: dict[str, list[list[float]]],
+    target_bind_locals: dict[str, list[list[float]]],
+) -> dict[str, list[list[float]]]:
+    source_globals = compute_global_rotations(source, row)
+    target_globals: dict[str, list[list[float]]] = {}
+    local_rotations: dict[str, list[list[float]]] = {}
+    for target_joint in target.joints:
+        source_name = mapping[target_joint.name]
+        bind_offset = global_bind_offsets.get(target_joint.name)
+        if source_name is None or bind_offset is None:
+            local_rotation = target_bind_locals[target_joint.name]
+            parent_global = (
+                target_globals[target_joint.parent]
+                if target_joint.parent is not None
+                else mat_identity()
+            )
+            target_global = matmul(parent_global, local_rotation)
+        else:
+            target_global = matmul(source_globals[source_name], bind_offset)
+            parent_global = (
+                target_globals[target_joint.parent]
+                if target_joint.parent is not None
+                else mat_identity()
+            )
+            local_rotation = matmul(mat_transpose(parent_global), target_global)
+
+        target_globals[target_joint.name] = target_global
+        local_rotations[target_joint.name] = local_rotation
+    return local_rotations
+
+
 def fzmotion_to_soma_correction_matrix(target_joint_name: str) -> list[list[float]] | None:
     fzmotion_offset = FZMOTION_IK_OFFSETS_XYZW.get(target_joint_name)
     soma_offset = SOMA_IK_OFFSETS_XYZW.get(target_joint_name)
@@ -953,6 +1048,7 @@ def mapped_joint_values(
 
 def output_position_values_for_target(
     row: list[float],
+    source_reference_row: list[float],
     target_joint: Joint,
     source: BVHData,
     target_reference: BVHData,
@@ -970,7 +1066,11 @@ def output_position_values_for_target(
         if "position" not in channel:
             continue
         if source_joint is not None and channel in source_joint.channels:
-            value = row[source_joint.channel_start + source_joint.channels.index(channel)]
+            source_offset = source_joint.channel_start + source_joint.channels.index(channel)
+            reference_source_value = source_reference_row[source_offset]
+            value = reference_positions.get(channel, 0.0) + (
+                row[source_offset] - reference_source_value
+            )
         else:
             value = reference_positions.get(channel, 0.0)
 
@@ -1103,26 +1203,40 @@ def soma_geometry_row(
     source_reference_row: list[float],
     mapping: dict[str, str | None],
     palm_fold: bool,
+    global_bind_offset: bool,
+    global_bind_offsets: dict[str, list[list[float]]],
+    target_bind_locals: dict[str, list[list[float]]],
     end_effector_ik: bool,
     pre_ik_orientation_offsets: dict[str, list[list[float]]],
     post_ik_orientation_offsets: dict[str, list[list[float]]],
     post_ik_orientation_offset_space: str,
 ) -> list[float]:
-    local_rotations = {
-        target_joint.name: euler_to_matrix(
-            corrected_rotation_values(
-                row,
-                source_reference_row,
-                target_joint,
-                source,
-                target_reference,
-                mapping,
-                palm_fold,
-            ),
-            ROTATION_CHANNELS,
+    if global_bind_offset:
+        local_rotations = global_bind_local_rotations(
+            row,
+            source,
+            target,
+            target_reference,
+            mapping,
+            global_bind_offsets,
+            target_bind_locals,
         )
-        for target_joint in target.joints
-    }
+    else:
+        local_rotations = {
+            target_joint.name: euler_to_matrix(
+                corrected_rotation_values(
+                    row,
+                    source_reference_row,
+                    target_joint,
+                    source,
+                    target_reference,
+                    mapping,
+                    palm_fold,
+                ),
+                ROTATION_CHANNELS,
+            )
+            for target_joint in target.joints
+        }
     for joint_name, orientation_offset in pre_ik_orientation_offsets.items():
         if joint_name in local_rotations:
             local_rotations[joint_name] = matmul(
@@ -1132,7 +1246,12 @@ def soma_geometry_row(
 
     local_positions = {
         target_joint.name: output_position_values_for_target(
-            row, target_joint, source, target_reference, mapping
+            row,
+            source_reference_row,
+            target_joint,
+            source,
+            target_reference,
+            mapping,
         )
         for target_joint in target.joints
     }
@@ -1213,12 +1332,24 @@ def convert_rows(
     mapping: dict[str, str | None],
     palm_fold: bool,
     use_source_geometry: bool,
+    global_bind_offset: bool,
     apply_ik_offset_correction: bool,
     end_effector_ik: bool,
     pre_ik_orientation_offsets: dict[str, list[list[float]]],
     post_ik_orientation_offsets: dict[str, list[list[float]]],
     post_ik_orientation_offset_space: str,
 ) -> list[list[float]]:
+    global_bind_offsets, target_bind_locals = (
+        build_global_bind_offsets(
+            source,
+            target,
+            target_reference,
+            source_reference_row,
+            mapping,
+        )
+        if global_bind_offset
+        else ({}, {})
+    )
     converted: list[list[float]] = []
     for row in source.motion_rows:
         if not use_source_geometry:
@@ -1231,6 +1362,9 @@ def convert_rows(
                     source_reference_row,
                     mapping,
                     palm_fold,
+                    global_bind_offset,
+                    global_bind_offsets,
+                    target_bind_locals,
                     end_effector_ik,
                     pre_ik_orientation_offsets,
                     post_ik_orientation_offsets,
@@ -1333,6 +1467,8 @@ def summarize_conversion(
     dry_run: bool,
     palm_fold: bool,
     use_source_geometry: bool,
+    global_bind_offset: bool,
+    end_effector_ik: bool,
     source_reference: BVHData | None,
     source_reference_seconds: float,
 ) -> None:
@@ -1361,7 +1497,11 @@ def summarize_conversion(
         + (
             "FZMotion source offsets"
             if use_source_geometry
-            else "SOMA template offsets + rest-pose delta rotations"
+            else (
+                "SOMA template offsets + global bind-pose offsets"
+                if global_bind_offset
+                else "SOMA template offsets + local rest-pose delta rotations"
+            )
         )
     )
     if not use_source_geometry:
@@ -1373,6 +1513,8 @@ def summarize_conversion(
                 else f"average of first {source_reference_seconds:g}s of source motion"
             )
         )
+        print(f"  source reference window: first {source_reference_seconds:g}s averaged")
+        print(f"  experimental end-effector IK: {'enabled' if end_effector_ik else 'disabled'}")
     print(f"  reference-filled target joints ({len(zero_targets)}): {', '.join(zero_targets)}")
     print(f"  ignored source joints ({len(ignored_sources)}): {', '.join(ignored_sources)}")
 
@@ -1413,6 +1555,7 @@ def convert_file(
     dry_run: bool,
     palm_fold: bool,
     use_source_geometry: bool,
+    global_bind_offset: bool,
     apply_ik_offset_correction: bool,
     end_effector_ik: bool,
     pre_ik_orientation_offsets: dict[str, list[list[float]]],
@@ -1426,7 +1569,7 @@ def convert_file(
         validate_source_reference_compatible(source, source_reference)
     mapping = build_joint_mapping(source, target_template)
     source_reference_row = (
-        source_reference.motion_rows[0]
+        initial_motion_reference_row(source_reference, source_reference_seconds)
         if source_reference is not None
         else initial_motion_reference_row(source, source_reference_seconds)
     )
@@ -1443,6 +1586,8 @@ def convert_file(
         dry_run,
         palm_fold,
         use_source_geometry,
+        global_bind_offset,
+        end_effector_ik,
         source_reference,
         source_reference_seconds,
     )
@@ -1461,6 +1606,7 @@ def convert_file(
         mapping,
         palm_fold,
         use_source_geometry,
+        global_bind_offset,
         apply_ik_offset_correction,
         end_effector_ik,
         pre_ik_orientation_offsets,
@@ -1498,8 +1644,9 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=DEFAULT_SOURCE_REFERENCE_SECONDS,
         help=(
-            "Seconds from the start of each source motion to average as the "
-            "source T-pose when --source-reference is omitted."
+            "Seconds from the start of the source reference to average as the "
+            "source T-pose. If --source-reference is omitted, the start of each "
+            "source motion is used."
         ),
     )
     parser.add_argument("--file", type=Path, default=None)
@@ -1524,16 +1671,34 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--global-bind-offset",
+        action="store_true",
+        help=(
+            "With --soma-geometry, align mapped joint coordinate frames using "
+            "fixed global bind-pose offsets computed from the source and SOMA "
+            "reference poses. This handles differing source and SOMA bone axes."
+        ),
+    )
+    parser.add_argument(
         "--no-palm-fold",
         action="store_true",
         help="Do not fold LeftHandPalm/RightHandPalm rotations into finger roots.",
     )
-    parser.add_argument(
+    end_effector_ik_group = parser.add_mutually_exclusive_group()
+    end_effector_ik_group.add_argument(
+        "--experimental-end-effector-ik",
+        action="store_true",
+        help=(
+            "Enable the experimental torso/hand/foot two-bone IK pass used by "
+            "--soma-geometry. It can introduce discontinuities near straight limbs."
+        ),
+    )
+    end_effector_ik_group.add_argument(
         "--no-end-effector-ik",
         action="store_true",
         help=(
-            "Disable the torso/hand/foot two-bone IK pass used by "
-            "--soma-geometry to keep the SOMA mesh aligned with source motion."
+            "Deprecated compatibility option. End-effector IK is disabled by "
+            "default; use --experimental-end-effector-ik to enable it."
         ),
     )
     parser.add_argument(
@@ -1562,6 +1727,8 @@ def main() -> int:
                 "--apply-ik-offset-correction is only supported with the default "
                 "FZMotion-geometry output; omit it when using --soma-geometry"
             )
+        if args.global_bind_offset and not args.soma_geometry:
+            raise ValueError("--global-bind-offset requires --soma-geometry")
 
         target_template = parse_bvh(args.template)
         validate_template_bvh(target_template)
@@ -1592,8 +1759,9 @@ def main() -> int:
                 dry_run=args.dry_run,
                 palm_fold=not args.no_palm_fold,
                 use_source_geometry=not args.soma_geometry,
+                global_bind_offset=args.global_bind_offset,
                 apply_ik_offset_correction=args.apply_ik_offset_correction,
-                end_effector_ik=not args.no_end_effector_ik,
+                end_effector_ik=args.experimental_end_effector_ik,
                 pre_ik_orientation_offsets=pre_ik_orientation_offsets,
                 post_ik_orientation_offsets=post_ik_orientation_offsets,
                 post_ik_orientation_offset_space=post_ik_orientation_offset_space,
