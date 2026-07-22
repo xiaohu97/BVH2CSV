@@ -15,6 +15,7 @@ class SourceType(IntEnum):
 class TargetType(IntEnum):
     """Enumeration of supported target model types."""
     UNITREE_G1 = auto()
+    HUMANOID_ULTRA = auto()
 
 _SOURCE_TYPE_TO_STR = {
     SourceType.SOMA : "soma"
@@ -22,9 +23,16 @@ _SOURCE_TYPE_TO_STR = {
 _STR_TO_SOURCE_TYPE = {s : t for t, s in _SOURCE_TYPE_TO_STR.items()}
 
 _TARGET_TYPE_TO_STR = {
-    TargetType.UNITREE_G1 : "unitree_g1"
+    TargetType.UNITREE_G1 : "unitree_g1",
+    TargetType.HUMANOID_ULTRA : "humanoid_ultra"
 }
 _STR_TO_TARGET_TYPE = {s : t for t, s in _TARGET_TYPE_TO_STR.items()}
+
+# Per-target retargeter config locations, keyed by (source, target)
+_RETARGETER_CONFIG_FILES = {
+    (SourceType.SOMA, TargetType.UNITREE_G1) : ('unitree_g1', 'soma_to_g1_retargeter_config.json'),
+    (SourceType.SOMA, TargetType.HUMANOID_ULTRA) : ('humanoid_ultra', 'soma_to_humanoid_ultra_retargeter_config.json'),
+}
 
 
 def get_source_str_from_type(source: SourceType) -> str:
@@ -131,14 +139,40 @@ def get_retargeter_config(source: SourceType, target: TargetType) -> dict:
     Raises:
         ValueError: If the source or target type is not supported.
     """
-    if target != TargetType.UNITREE_G1:
-        raise ValueError(f"Unknown target type [{target}].")
-
-    if source == SourceType.SOMA:
-        filename = 'soma_to_g1_retargeter_config.json'
-    else:
-        raise ValueError(f"Unknown source type [{source}] for target [{target}].")
+    try:
+        config_dir, filename = _RETARGETER_CONFIG_FILES[(source, target)]
+    except KeyError:
+        raise ValueError(f"Unknown source [{source}] / target [{target}] combination.") from None
 
     return io_utils.load_json(
-        io_utils.get_config_file('unitree_g1', filename)
+        io_utils.get_config_file(config_dir, filename)
     )
+
+
+def create_robot_model_builder(target: TargetType):
+    """
+    Create a newton.ModelBuilder populated with the robot model for a given target type.
+
+    Args:
+        target (TargetType): The target robot type.
+
+    Returns:
+        newton.ModelBuilder: A builder containing the robot articulation.
+
+    Raises:
+        ValueError: If the target type is not supported.
+    """
+    import newton
+
+    builder = newton.ModelBuilder()
+    if target == TargetType.UNITREE_G1:
+        builder.add_mjcf(
+            newton.utils.download_asset("unitree_g1") / "mjcf/g1_29dof_rev_1_0.xml")
+    elif target == TargetType.HUMANOID_ULTRA:
+        builder.add_urdf(
+            str(io_utils.get_config_file('humanoid_ultra', 'humanoid_ultra_27dof_description.urdf')),
+            floating=True)
+    else:
+        raise ValueError(f"Unknown target type [{target}].")
+
+    return builder

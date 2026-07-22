@@ -48,8 +48,8 @@ class Viewer:
         self.playback_loop       = True
         self.playback_total_time = 0.0
 
-        self.retarget_source_options = ['soma']
-        self.retarget_target_options = ['unitree_g1']
+        self.retarget_source_options = [self.config.get('retarget_source', 'soma')]
+        self.retarget_target_options = [self.config.get('retarget_target', 'unitree_g1')]
         self.retarget_solver_options = ['Newton']
         self.retarget_solver_idx     = 0
         self.retarget_target_idx     = 0
@@ -63,10 +63,9 @@ class Viewer:
         self.viewer.renderer.set_title("BVH to CSV Converter")
         self.viewer.register_ui_callback(lambda ui: self.gui(ui), position="free")
 
-        g1_builder = newton.ModelBuilder()
-        g1_builder.add_mjcf(
-            newton.utils.download_asset("unitree_g1") / "mjcf/g1_29dof_rev_1_0.xml")
-        
+        g1_builder = pipeline_utils.create_robot_model_builder(
+            pipeline_utils.get_target_type_from_str(self.retarget_target_options[0]))
+
         self.num_robots = 1
         self.robot_offsets = [wp.transform(wp.vec3(0.0, i - (self.num_robots - 1) / 2.0, 0.0), wp.quat_identity()) for i in range(self.num_robots)]
         builder = newton.ModelBuilder()
@@ -98,7 +97,8 @@ class Viewer:
         self.ui_scene_options(ui)
 
     def load_csv_file(self, path):
-        self.robot_csv_animation_buffers[0] = csv_utils.load_csv(path)
+        csv_config = csv_utils.get_csv_config(self.retarget_target_options[self.retarget_target_idx])
+        self.robot_csv_animation_buffers[0] = csv_utils.load_csv(path, csv_config=csv_config)
         self.compute_playback_total_time()
 
     def load_bvh_file(self, path):
@@ -320,7 +320,10 @@ class Viewer:
                     defaultextension=".csv",
                     filetypes=[("CSV files", "*.csv")])
                 if save_path:
-                    csv_utils.save_csv(save_path, self.robot_csv_animation_buffers[0])
+                    csv_utils.save_csv(
+                        save_path,
+                        self.robot_csv_animation_buffers[0],
+                        csv_utils.get_csv_config(self.retarget_target_options[self.retarget_target_idx]))
 
             if self.robot_csv_animation_buffers[0] is None:
                 ui.end_disabled()
@@ -465,7 +468,7 @@ class Viewer:
                     csv_buffer = csv_buffers[i]
                     dst_path = export_path / pathlib.Path(batch[i]).relative_to(import_path).with_suffix(".csv")
                     dst_path.parent.mkdir(parents=True, exist_ok=True)
-                    csv_utils.save_csv(dst_path, csv_buffer)
+                    csv_utils.save_csv(dst_path, csv_buffer, csv_utils.get_csv_config(retarget_target))
 
             nb_retargeted_motions += len(batch)
 

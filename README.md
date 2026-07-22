@@ -5,7 +5,7 @@
 
 Convert [SOMA](https://github.com/NVlabs/SOMA-X) human motion captures into humanoid robot joint animation. Takes BVH motion files as input and produces robot-playable CSV joint data as output using GPU-optimized inverse kinematics via [Newton](https://github.com/newton-physics/newton) and high-performance computation with [NVIDIA Warp](https://github.com/NVIDIA/warp).
 
-The retargeting pipeline handles proportional human-to-robot scaling, multi-objective IK solving with joint limits, feet stabilization to maintain ground contact, and per-DOF joint limit clamping. Currently supports SOMA as the input skeleton and Unitree G1 (29 DOF) as the output robot. Additional robot targets are planned.
+The retargeting pipeline handles proportional human-to-robot scaling, multi-objective IK solving with joint limits, feet stabilization to maintain ground contact, and per-DOF joint limit clamping. It uses SOMA as the input skeleton and ships with Unitree G1 (29 DOF) and Humanoid Ultra (27 DOF) as output robots. Adding a new robot target is data-driven and is documented under [Adding a New Robot Target](#adding-a-new-robot-target).
 
 SOMA Retargeter is part of the [SOMA body model](https://github.com/NVlabs/SOMA-X) ecosystem for humanoid motion data.
 
@@ -106,6 +106,67 @@ python ./app/bvh_to_csv_converter.py --config ./assets/default_bvh_to_csv_conver
 ```
 
 Batch mode recursively finds all `.bvh` files in the import folder, processes them in configurable batch sizes, and writes CSV files to the export folder mirroring the input directory structure.
+
+### Selecting the target robot
+
+The target robot is chosen by the `retarget_target` field in the config file. Both the viewer and batch modes read it:
+
+```json
+{
+    "retarget_source": "soma",
+    "retarget_target": "humanoid_ultra",
+    "retarget_source_facing_direction": "Mujoco"
+}
+```
+
+A ready-to-run config for Humanoid Ultra is provided at `assets/humanoid_ultra_bvh_to_csv_converter_config.json`.
+
+## Adding a New Robot Target
+
+The pipeline is data-driven: the IK solver, scaling, feet stabilization, and joint-limit clamping are all robot-agnostic. Adding a robot means registering it in a few places and providing three JSON config files. Humanoid Ultra (`soma_retargeter/configs/humanoid_ultra/`) is a complete worked example built from a URDF — mirror it for your own robot.
+
+### 1. Register the robot in code
+
+**`soma_retargeter/pipelines/utils.py`**
+
+- Add a member to the `TargetType` enum.
+- Add its string name to `_TARGET_TYPE_TO_STR`.
+- Add a `(SourceType.SOMA, TargetType.YOUR_ROBOT)` entry to `_RETARGETER_CONFIG_FILES` pointing at your retargeter config.
+- Add a branch to `create_robot_model_builder()` that loads your robot model into the `newton.ModelBuilder`. Use `builder.add_mjcf(...)` for an MJCF, or `builder.add_urdf(path, floating=True)` for a URDF.
+
+**`soma_retargeter/assets/csv.py`**
+
+- Subclass `_EulerRootCSVConfigBase` and define `csv_header`. The CSV layout is `[Frame, root translate xyz (cm), root rotate xyz (euler deg), joint dofs (deg)]`. **The joint columns must be listed in the robot's Newton DOF order** — for a URDF this is the depth-first joint order, which you can print with `[newton_utils.get_name_from_label(l) for l in builder.body_label]` (skip the root/base body).
+- Register the class in `_ROBOT_CSV_CONFIGS` under the robot's string name.
+
+### 2. Create the config directory
+
+Create `soma_retargeter/configs/<your_robot>/` with three files (see Humanoid Ultra for the exact schema):
+
+| File | Purpose |
+|------|---------|
+| `soma_to_<robot>_retargeter_config.json` | IK settings + `ik_map`: maps each SOMA joint (`Hips`, `LeftHand`, …) to a robot link and per-effector position/rotation weights. |
+| `soma_to_<robot>_scaler_config.json` | Per-joint human→robot `joint_scales`, the SOMA `joint_parents` topology, and per-joint `joint_offsets` (translation + quaternion) that align the SOMA zero pose onto the robot. |
+| `<robot>_feet_stabilizer_config.json` | Two-bone leg IK effectors and hints used to keep feet planted on the ground. |
+
+For a URDF-based robot, also place the robot description in this directory. Newton cannot resolve `package://` mesh URIs, so rewrite the mesh paths to absolute (or relative-to-URDF) paths in your copy — otherwise the kinematics still load but the viewer shows no meshes.
+
+### 3. Generating the scaler offsets
+
+`joint_scales` and `joint_offsets` are the only genuinely robot-specific numbers, and they are derived rather than hand-authored. The alignment method is:
+
+- Compute the SOMA **zero pose** global joint transforms (load `configs/soma/soma_zero_frame0.bvh` with `Mujoco` facing) and the robot **rest pose** body transforms (`newton.eval_fk` on the freshly built model, lifted so the soles touch the ground).
+- The pipeline expects each effector target at the zero pose to equal the robot rest pose pre-rotated by `W = Rz(-90°)`. So for each mapped joint:
+  - `offset_q = conj(q_soma_zero) · W · q_robot_rest`
+  - `offset_t = rotate(conj(W · q_robot_rest), W(p_robot_rest) − p_scaled_zero)`
+  - `joint_scale` = ratio of the robot rest limb length to the SOMA zero limb length (radial from the root).
+- Note the scaler code copies `LeftToe`/`RightToe` offsets onto `LeftToeBase`/`RightToeBase`, so those keys must be present in `joint_offsets`.
+
+This can be scripted; validate it by running the same procedure against the shipped G1 config and checking the computed offsets match to within a few degrees before trusting it on a new robot.
+
+### 4. Run and tune
+
+Point a converter config at the new `retarget_target` and run. Verify the output CSV keeps every joint within its URDF limits, that per-frame deltas stay small (smooth), and that a forward-kinematics reconstruction of the hands/feet tracks the SOMA source. Fine-tune the `t_weight`/`r_weight` values in the retargeter config and the `joint_scales` in the scaler config against the OpenGL viewer for the best-looking motion.
 
 ## Code Overview
 

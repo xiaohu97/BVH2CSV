@@ -1,0 +1,1816 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="humanoidultra01">
+
+  <mujoco>
+    <compiler 
+        meshdir="../meshes/" 
+        balanceinertia="true" 
+        discardvisual="false" />
+  </mujoco>
+
+
+
+
+  <!-- [CAUTION] uncomment when convert to mujoco -->
+  <!-- <link name="world"></link>
+  <joint name="floating_base_joint" type="floating">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint> -->
+
+
+
+
+
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.07487175 0.0 -0.01623465"
+        rpy="0 0 0" />
+      <mass
+        value="7.87598286" />
+      <inertia
+        ixx="0.14888813"
+        ixy="0.00000971"
+        ixz="-0.00995509"
+        iyy="0.04658629"
+        iyz="0.00000344"
+        izz="0.16717120" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/base_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="-0.1365 0.14976666050 -0.03435863854" rpy="0.0 1.5708 0.0"/>
+      <geometry>
+        <sphere  radius="0.062"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.1365 -0.14976666050 -0.03435863854" rpy="0.0 1.5708 0.0"/>
+      <geometry>
+        <sphere  radius="0.062"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 -0.03117931927" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.114 0.405 0.06235863854"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.15 0.26 0.01"/>
+      </geometry>
+    </collision>         
+  </link>
+  <link
+    name="left_hip_roll_link">
+    <inertial>
+      <origin
+        xyz=" 0.08200592 0.0  -0.00835245"
+        rpy="0 0 0" />
+      <mass
+        value="1.58332093" />
+      <inertia
+        ixx="0.00214795"
+        ixy="0.00000206"
+        ixz="0.00001901"
+        iyy="0.00274011"
+        iyz="0.00000032"
+        izz="0.00331047" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_hip_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_hip_roll_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="left_hip_roll_joint"
+    type="revolute">
+    <origin
+      xyz="-0.0835000000000025 0.149766660498395 -0.0343586385440964"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="left_hip_roll_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-0.25"
+      upper="1.57"
+      effort="300"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="left_hip_yaw_link">
+    <inertial>
+      <origin
+        xyz="0.0 0.02295677 -0.10046069"
+        rpy="0 0 0" />
+      <mass
+        value="1.47113700" />
+      <inertia
+        ixx="0.01511326"
+        ixy="0.00000014"
+        ixz="-0.00000046"
+        iyy="0.00628345"
+        iyz="0.00259908"
+        izz="0.01009579" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_hip_yaw_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_hip_yaw_link.STL" />
+      </geometry>
+    </collision> -->    
+  </link>
+  <joint
+    name="left_hip_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0.0834999999999998 0 -0.0274999999999998"
+      rpy="0 0 0" />
+    <parent
+      link="left_hip_roll_link" />
+    <child
+      link="left_hip_yaw_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="90"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="left_hip_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.00287587 0.00519374 -0.03121791"
+        rpy="0 0 0" />
+      <mass
+        value="8.43224915" />
+      <inertia
+        ixx="0.09210620"
+        ixy="0.00013064"
+        ixz="0.00323324"
+        iyy="0.08127823"
+        iyz="-0.00138559"
+        izz="0.03527599" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_hip_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_hip_pitch_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.025 0.0 -0.18" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.049 0.36"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0578 0.0" rpy="1.5708 0.0 0"/>
+      <geometry>
+        <sphere  radius="0.085"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.0252 0.0" rpy="1.5708 0.0 0"/>
+      <geometry>
+        <sphere  radius="0.085"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_hip_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0 -0.00680000000000071 -0.1652"
+      rpy="0 0 0" />
+    <parent
+      link="left_hip_yaw_link" />
+    <child
+      link="left_hip_pitch_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="320"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="left_knee_link">
+    <inertial>
+      <origin
+        xyz="0.00450302 -0.00000288 -0.14699369"
+        rpy="0 0 0" />
+      <mass
+        value="2.20062290" />
+      <inertia
+        ixx="0.02367744"
+        ixy="0.00000505"
+        ixz="-0.00189145"
+        iyy="0.02406466"
+        iyz="-0.00031563"
+        izz="0.00185217" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_knee_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_knee_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.0 -0.18" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.027 0.26"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_knee_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.38"
+      rpy="0 0 0" />
+    <parent
+      link="left_hip_pitch_link" />
+    <child
+      link="left_knee_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0.0"
+      upper="2.36"
+      effort="320"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="left_ankle_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.0 -0.0002 0.0"
+        rpy="0 0 0" />
+      <mass
+        value="0.05651532" />
+      <inertia
+        ixx="0.00000836"
+        ixy="0.0"
+        ixz="0.00000010"
+        iyy="0.00000369"
+        iyz="0.0"
+        izz="0.00001065" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_ankle_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.650980392156863 0.619607843137255 0.588235294117647 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_ankle_pitch_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="left_ankle_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0.000178842126592992 0 -0.367370694199002"
+      rpy="0 0 0" />
+    <parent
+      link="left_knee_link" />
+    <child
+      link="left_ankle_pitch_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-0.7"
+      upper="0.95"
+      effort="72"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="left_ankle_roll_link">
+    <inertial>
+      <origin
+        xyz="0.00491477 -0.00019240  -0.03027853"
+        rpy="0 0 0" />
+      <mass
+        value="0.75938458" />
+      <inertia
+        ixx="0.00045878"
+        ixy="0.00000035"
+        ixz="0.00022686"
+        iyy="0.00224096"
+        iyz="-0.00000012"
+        izz="0.00237129" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_ankle_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_ankle_roll_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0212765 -0.037 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.099745" radius="0.003"/> 
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0212765 0.037 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.099745" radius="0.003"/> 
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.02662359693 -0.0220429 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.20267795214" radius="0.003"/> 
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.02662359693 0.0220429 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.20267795214" radius="0.003"/> 
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_ankle_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 -0.0428243667780047 0" />
+    <parent
+      link="left_ankle_pitch_link" />
+    <child
+      link="left_ankle_roll_link" />
+    <axis
+      xyz="0.996194698091745 0 -0.0871557427476591" />
+    <limit
+      lower="-0.45"
+      upper="0.45"
+      effort="72"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="right_hip_roll_link">
+    <inertial>
+      <origin
+        xyz="0.08200592 0.0  -0.00835245"
+        rpy="0 0 0" />
+      <mass
+        value="1.58332093" />
+      <inertia
+        ixx="0.00214795"
+        ixy="0.00000206"
+        ixz="0.00001901"
+        iyy="0.00274011"
+        iyz="0.00000032"
+        izz="0.00331047" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_hip_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_hip_roll_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="right_hip_roll_joint"
+    type="revolute">
+    <origin
+      xyz="-0.0835000000000026 -0.149766660498396 -0.034358638544096"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="right_hip_roll_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="0.25"
+      effort="300"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="right_hip_yaw_link">
+    <inertial>
+      <origin
+        xyz="0.0 -0.02295677  -0.10046069"
+        rpy="0 0 0" />
+      <mass
+        value="1.47113700" />
+      <inertia
+        ixx="0.01511326"
+        ixy="0.00000014"
+        ixz="0.00000046"
+        iyy="0.00628345"
+        iyz="-0.00259908"
+        izz="0.01009579" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_hip_yaw_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_hip_yaw_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="right_hip_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0.0834999999999998 0 -0.027499999999999"
+      rpy="0 0 0" />
+    <parent
+      link="right_hip_roll_link" />
+    <child
+      link="right_hip_yaw_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="90"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="right_hip_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.00286304 -0.00508632 -0.03095516"
+        rpy="0 0 0" />
+      <mass
+        value="8.45830779" />
+      <inertia
+        ixx="0.09189738"
+        ixy="-0.00012254"
+        ixz="0.00321880"
+        iyy="0.08110974"
+        iyz="0.00134185"
+        izz="0.03535418" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_hip_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_hip_pitch_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.025 0.0 -0.18" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.049 0.36"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.0578 0.0" rpy="1.5708 0.0 0"/>
+      <geometry>
+        <sphere  radius="0.085"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.0252 0.0" rpy="1.5708 0.0 0"/>
+      <geometry>
+        <sphere  radius="0.085"/>
+      </geometry>
+    </collision>        
+  </link>
+  <joint
+    name="right_hip_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.00680000000000022 -0.1652"
+      rpy="0 0 0" />
+    <parent
+      link="right_hip_yaw_link" />
+    <child
+      link="right_hip_pitch_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="320"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="right_knee_link">
+    <inertial>
+      <origin
+        xyz="0.00447782 0.00002168  -0.14827850"
+        rpy="0 0 0" />
+      <mass
+        value="2.21352893" />
+      <inertia
+        ixx="0.02430725"
+        ixy="-0.00000593"
+        ixz="-0.00190369"
+        iyy="0.02468919"
+        iyz="0.00030951"
+        izz="0.00185900" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_knee_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_knee_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.0 -0.18" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.027 0.26"/>
+      </geometry>
+    </collision>    
+  </link>
+  <joint
+    name="right_knee_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.380000000000003"
+      rpy="0 0 0" />
+    <parent
+      link="right_hip_pitch_link" />
+    <child
+      link="right_knee_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0.0"
+      upper="2.36"
+      effort="320"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="right_ankle_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.0 0.00020000 0.0"
+        rpy="0 0 0" />
+      <mass
+        value="0.05651532" />
+      <inertia
+        ixx="0.00000836"
+        ixy="0.0"
+        ixz="0.00000010"
+        iyy="0.00000369"
+        iyz="0.0"
+        izz="0.00001065" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_ankle_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.650980392156863 0.619607843137255 0.588235294117647 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_ankle_pitch_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="right_ankle_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0.000178827472855806 0 -0.36737068203755"
+      rpy="0 0 0" />
+    <parent
+      link="right_knee_link" />
+    <child
+      link="right_ankle_pitch_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-0.7"
+      upper="0.95"
+      effort="72"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="right_ankle_roll_link">
+    <inertial>
+      <origin
+        xyz="0.00491479 0.00020760 -0.03027855"
+        rpy="0 0 0" />
+      <mass
+        value="0.75938458" />
+      <inertia
+        ixx=" 0.000458784"
+        ixy="0.00000035"
+        ixz="0.00022686"
+        iyy="0.00224096"
+        iyz="-0.00000012"
+        izz="0.00237129" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_ankle_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_ankle_roll_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0212765 -0.037 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.099745" radius="0.003"/> 
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0212765 0.037 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.099745" radius="0.003"/> 
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.02662359693 -0.0220429 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.20267795214" radius="0.003"/> 
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.02662359693 0.0220429 -0.04755" rpy="0 1.5707963 0"/>
+      <geometry>
+        <cylinder length="0.20267795214" radius="0.003"/> 
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_ankle_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 -0.0428243667780054 0" />
+    <parent
+      link="right_ankle_pitch_link" />
+    <child
+      link="right_ankle_roll_link" />
+    <axis
+      xyz="0.996194698091745 0 -0.0871557427476598" />
+    <limit
+      lower="-0.45"
+      upper="0.45"
+      effort="72"
+      velocity="12.0" />
+  </joint>
+  <link
+    name="trunk_link">
+    <inertial>
+      <origin
+        xyz=" -0.00361584 0.00001177 0.18862374"
+        rpy="0 0 0" />
+      <mass
+        value="11.2484619397318" />
+      <inertia
+        ixx="0.29618358"
+        ixy="0.00018050"
+        ixz="0.00712966"
+        iyy="0.24546083"
+        iyz="-0.00000289"
+        izz="0.09088092" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/trunk_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/trunk_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.0 0.2" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.210 0.166 0.201"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 -0.129 0.2" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.108 0.06 0.201"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0.0 0.129 0.2" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.108 0.06 0.201"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="waist_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0.0611"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="trunk_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2.62"
+      upper="2.62"
+      effort="150"
+      velocity="6.28" />
+  </joint>
+  <link
+    name="left_shoulder_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.00690853 0.05543982 0.0"
+        rpy="0 0 0" />
+      <mass
+        value="0.69960149" />
+      <inertia
+        ixx="0.00048554"
+        ixy="-0.00004023"
+        ixz="-0.00000048"
+        iyy="0.00044891"
+        iyz="-0.00000004"
+        izz="0.00062265" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_shoulder_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_shoulder_pitch_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.063 0.0" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder length="0.076" radius="0.033"/>
+      </geometry>
+    </collision>    
+  </link>
+  <joint
+    name="left_shoulder_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.128943749506644 0.352787572334531"
+      rpy="0.261799387799149 0 0" />
+    <parent
+      link="trunk_link" />
+    <child
+      link="left_shoulder_pitch_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-2.4"
+      upper="1.2"
+      effort="72"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="left_shoulder_roll_link">
+    <inertial>
+      <origin
+        xyz="-0.00198558 0.05034978 -0.05220954"
+        rpy="0 0 0" />
+      <mass
+        value="0.76368656" />
+      <inertia
+        ixx="0.00104781"
+        ixy="-0.00008007"
+        ixz="0.00008323"
+        iyy="0.00103921"
+        iyz="0.00031983"
+        izz="0.00088550" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_shoulder_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_shoulder_roll_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="left_shoulder_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.0630000000000002 0"
+      rpy="-0.26179938779915 0 0" />
+    <parent
+      link="left_shoulder_pitch_link" />
+    <child
+      link="left_shoulder_roll_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-0.6"
+      upper="2.7"
+      effort="72"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="left_shoulder_yaw_link">
+    <inertial>
+      <origin
+        xyz="-0.00053458 0.00054648 -0.11813711"
+        rpy="0 0 0" />
+      <mass
+        value="0.78058169" />
+      <inertia
+        ixx="0.00212153"
+        ixy="-0.00000009"
+        ixz="0.00000956"
+        iyy="0.00216666"
+        iyz="0.00000337"
+        izz="0.00038335" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_shoulder_yaw_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_shoulder_yaw_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.0 -0.0535" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.081"/>
+      </geometry>
+    </collision>    
+  </link>
+  <joint
+    name="left_shoulder_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.065813 -0.091069"
+      rpy="0.2618 0 0" />
+    <parent
+      link="left_shoulder_roll_link" />
+    <child
+      link="left_shoulder_yaw_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-3.7175512"
+      upper="1.623156"
+      effort="72.0"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="left_elbow_link">
+    <inertial>
+      <origin
+        xyz="0.00525148 0.00025856 -0.06316864"
+        rpy="0 0 0" />
+      <mass
+        value="0.53459108" />
+      <inertia
+        ixx="0.00037825"
+        ixy="0.0"
+        ixz="-0.00008529"
+        iyy="0.00042105"
+        iyz="-0.00000004"
+        izz="0.00026037" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_elbow_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_elbow_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_elbow_joint"
+    type="revolute">
+    <origin
+      xyz="0 -0.00025881904510211 -0.151965925826289"
+      rpy="0 0 0" />
+    <parent
+      link="left_shoulder_yaw_link" />
+    <child
+      link="left_elbow_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-2.17"
+      upper="0"
+      effort="72"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="left_wrist_yaw_link">
+    <inertial>
+      <origin
+        xyz="0.00689678 0.00006671 -0.05588964"
+        rpy="0 0 0" />
+      <mass
+        value="0.63301211" />
+      <inertia
+        ixx="0.00046432"
+        ixy="-0.00000052"
+        ixz="0.00003416"
+        iyy="0.00054274"
+        iyz="0.00000452"
+        izz="0.00037831" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_wrist_yaw_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_wrist_yaw_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.0 -0.065" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder length="0.071" radius="0.033"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_wrist_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.0915"
+      rpy="0 0 0" />
+    <parent
+      link="left_elbow_link" />
+    <child
+      link="left_wrist_yaw_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1.1519173"
+      upper="4.043510"
+      effort="30"
+      velocity="6.28" />
+  </joint>
+  <link
+    name="left_wrist_roll_link">
+    <inertial>
+      <origin
+        xyz="-0.00300548 -0.00019258 -0.05178742"
+        rpy="0 0 0" />
+      <mass
+        value="0.61394363" />
+      <inertia
+        ixx="0.00055258"
+        ixy="0.00000045"
+        ixz="0.00009579"
+        iyy="0.00072795"
+        iyz="-0.00000117"
+        izz="0.00038948" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_wrist_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_wrist_roll_link.STL" />
+      </geometry>
+    </collision> -->   
+  </link>
+  <joint
+    name="left_wrist_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.00025882 -0.064034"
+      rpy="0 0 0" />
+    <parent
+      link="left_wrist_yaw_link" />
+    <child
+      link="left_wrist_roll_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.11"
+      upper="1.11"
+      effort="30"
+      velocity="6.28" />
+  </joint>
+  <link
+    name="left_wrist_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.00486556 -0.00565958 -0.09968261"
+        rpy="0 0 0" />
+      <mass
+        value="0.37464276" />
+      <inertia
+        ixx="0.00115705"
+        ixy="0.00000292"
+        ixz="0.00005095"
+        iyy="0.00123990"
+        iyz="0.00000063"
+        izz="0.00026026" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_wrist_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/left_wrist_pitch_link.STL" />
+      </geometry>
+    </collision>    
+  </link>
+  <joint
+    name="left_wrist_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.065"
+      rpy="0 0 0" />
+    <parent
+      link="left_wrist_roll_link" />
+    <child
+      link="left_wrist_pitch_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-1.05"
+      upper="1.05"
+      effort="30"
+      velocity="6.28" />
+  </joint>
+  <link
+    name="right_shoulder_pitch_link">
+    <inertial>
+      <origin
+        xyz=" 0.00690853 -0.05543982 0.0"
+        rpy="0 0 0" />
+      <mass
+        value="0.69960149" />
+      <inertia
+        ixx="0.00048554"
+        ixy="0.00004023"
+        ixz="0.00000048"
+        iyy="0.00044891"
+        iyz="-0.00000004"
+        izz="0.00062265" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_shoulder_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_shoulder_pitch_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 -0.063 0.0" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder length="0.076" radius="0.033"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_shoulder_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0 -0.128943749506644 0.352787572334531"
+      rpy="-0.26179938779915 0 0" />
+    <parent
+      link="trunk_link" />
+    <child
+      link="right_shoulder_pitch_link" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-1.2"
+      upper="2.4"
+      effort="72"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="right_shoulder_roll_link">
+    <inertial>
+      <origin
+        xyz="-0.00198552 -0.05034978 -0.05220954"
+        rpy="0 0 0" />
+      <mass
+        value="0.76368656" />
+      <inertia
+        ixx="0.00104781"
+        ixy="0.00008008"
+        ixz="0.00008294"
+        iyy="0.00103921"
+        iyz="-0.00031983"
+        izz="0.00088550" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_shoulder_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_shoulder_roll_link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="right_shoulder_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 -0.063 0"
+      rpy="0.26179938779915 0 0" />
+    <parent
+      link="right_shoulder_pitch_link" />
+    <child
+      link="right_shoulder_roll_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-2.7"
+      upper="0.6"
+      effort="72"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="right_shoulder_yaw_link">
+    <inertial>
+      <origin
+        xyz="-0.00053451  -0.00054647 -0.11813708"
+        rpy="0 0 0" />
+      <mass
+        value="0.78058104" />
+      <inertia
+        ixx="0.00212153"
+        ixy="0.00000037"
+        ixz="0.00000956"
+        iyy="0.00216667"
+        iyz="-0.00000344"
+        izz="0.00038336" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_shoulder_yaw_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_shoulder_yaw_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.0 -0.0535" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.05 0.081"/>
+      </geometry>
+    </collision>    
+  </link>
+  <joint
+    name="right_shoulder_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0 -0.065813 -0.091069"
+      rpy="-0.2618 0 0" />
+    <parent
+      link="right_shoulder_roll_link" />
+    <child
+      link="right_shoulder_yaw_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1.623156"
+      upper="3.7175512"
+      effort="72"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="right_elbow_link">
+    <inertial>
+      <origin
+        xyz="0.00525148 -0.00025908 -0.06316864"
+        rpy="0 0 0" />
+      <mass
+        value="0.53459108" />
+      <inertia
+        ixx="0.00037825"
+        ixy="0.0"
+        ixz="-0.00008529"
+        iyy="0.00042105"
+        iyz="-0.00000004"
+        izz="0.00026037" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_elbow_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_elbow_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_elbow_joint"
+    type="revolute">
+    <origin
+      xyz="0 0.00025881904510261 -0.151965925826289"
+      rpy="0 0 0" />
+    <parent
+      link="right_shoulder_yaw_link" />
+    <child
+      link="right_elbow_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0.0"
+      upper="2.17"
+      effort="72"
+      velocity="8.164" />
+  </joint>
+  <link
+    name="right_wrist_yaw_link">
+    <inertial>
+      <origin
+        xyz="0.00689678  -0.00006671 -0.05588964"
+        rpy="0 0 0" />
+      <mass
+        value="0.63301211" />
+      <inertia
+        ixx="0.00046432"
+        ixy="0.00000116"
+        ixz="0.00003416"
+        iyy="0.00054274"
+        iyz="-0.00000453"
+        izz="0.00037831" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_wrist_yaw_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_wrist_yaw_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="0.0 0.0 -0.065" rpy="0 1.5708 0"/>
+      <geometry>
+        <cylinder length="0.071" radius="0.033"/>
+      </geometry>
+    </collision>    
+  </link>
+  <joint
+    name="right_wrist_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.0915"
+      rpy="0 0 0" />
+    <parent
+      link="right_elbow_link" />
+    <child
+      link="right_wrist_yaw_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-4.043510"
+      upper="1.1519173"
+      effort="30"
+      velocity="6.28" />
+  </joint>
+  <link
+    name="right_wrist_roll_link">
+    <inertial>
+      <origin
+        xyz="-0.00316436 0.00021316 -0.05151221"
+        rpy="0 0 0" />
+      <mass
+        value="0.61737346" />
+      <inertia
+        ixx="0.00056267"
+        ixy="-0.00000074"
+        ixz="0.00010064"
+        iyy="0.00074008"
+        iyz="0.00000036"
+        izz="0.00039308" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_wrist_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_wrist_roll_link.STL" />
+      </geometry>
+    </collision> -->
+    <!-- <collision>
+      <origin xyz="0.0 0.0 -0.065" rpy="0 1.5708 1.5708"/>
+      <geometry>
+        <cylinder length="0.0695" radius="0.028"/>
+      </geometry>
+    </collision>     -->
+  </link>
+  <joint
+    name="right_wrist_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0 -0.00025882 -0.064034"
+      rpy="0 0 0" />
+    <parent
+      link="right_wrist_yaw_link" />
+    <child
+      link="right_wrist_roll_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.11"
+      upper="1.11"
+      effort="30"
+      velocity="6.28" />
+  </joint>
+  <link
+    name="right_wrist_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.00486558 0.00565958 -0.09968261"
+        rpy="0 0 0" />
+      <mass
+        value="0.37464274" />
+      <inertia
+        ixx="0.00115705"
+        ixy="-0.00000292"
+        ixz="0.00005095"
+        iyy="0.00123990"
+        iyz="-0.00000063"
+        izz="0.00026026" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_wrist_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="/home/ustczxh/humanoid/zxh-isaaclab/source/unitree_rl_lab/unitree_rl_lab/assets/robots/humanoid_ultra_description/meshes/right_wrist_pitch_link.STL" />
+      </geometry>
+    </collision>   
+  </link>
+  <joint
+    name="right_wrist_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 -0.065"
+      rpy="0 0 0" />
+    <parent
+      link="right_wrist_roll_link" />
+    <child
+      link="right_wrist_pitch_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.05"
+      upper="1.05"
+      effort="30"
+      velocity="6.28" />
+  </joint>
+</robot>

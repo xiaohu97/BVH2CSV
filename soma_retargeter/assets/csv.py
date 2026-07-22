@@ -22,26 +22,11 @@ class RobotCSVConfig(Protocol):
         ...
 
 
-@dataclass
-class UnitreeG129DOF_CSVConfig:
-    name: str = "unitree_g1_29dof"
-    csv_header: ClassVar[List[str]] = [
-        "Frame",
-        "root_translateX", "root_translateY", "root_translateZ",
-        "root_rotateX", "root_rotateY", "root_rotateZ",
-        "left_hip_pitch_joint_dof", "left_hip_roll_joint_dof", "left_hip_yaw_joint_dof",
-        "left_knee_joint_dof", "left_ankle_pitch_joint_dof", "left_ankle_roll_joint_dof",
-        "right_hip_pitch_joint_dof", "right_hip_roll_joint_dof", "right_hip_yaw_joint_dof",
-        "right_knee_joint_dof", "right_ankle_pitch_joint_dof", "right_ankle_roll_joint_dof",
-        "waist_yaw_joint_dof", "waist_roll_joint_dof", "waist_pitch_joint_dof",
-        "left_shoulder_pitch_joint_dof", "left_shoulder_roll_joint_dof",
-        "left_shoulder_yaw_joint_dof", "left_elbow_joint_dof",
-        "left_wrist_roll_joint_dof", "left_wrist_pitch_joint_dof", "left_wrist_yaw_joint_dof",
-        "right_shoulder_pitch_joint_dof", "right_shoulder_roll_joint_dof",
-        "right_shoulder_yaw_joint_dof", "right_elbow_joint_dof",
-        "right_wrist_roll_joint_dof", "right_wrist_pitch_joint_dof",
-        "right_wrist_yaw_joint_dof"]
-
+class _EulerRootCSVConfigBase:
+    """
+    Shared row conversion for CSV layouts of the form:
+    [frame, root translate xyz (cm), root rotate xyz (euler deg), joint dofs (deg)].
+    """
     def to_anim_frame(self, csv_row: np.ndarray) -> np.ndarray:
         """
         Convert one CSV row (including frame index) into one anim buffer frame.
@@ -81,6 +66,75 @@ class UnitreeG129DOF_CSVConfig:
         row.extend(np.rad2deg(anim_row[7:]))
 
         return row
+
+
+@dataclass
+class UnitreeG129DOF_CSVConfig(_EulerRootCSVConfigBase):
+    name: str = "unitree_g1_29dof"
+    csv_header: ClassVar[List[str]] = [
+        "Frame",
+        "root_translateX", "root_translateY", "root_translateZ",
+        "root_rotateX", "root_rotateY", "root_rotateZ",
+        "left_hip_pitch_joint_dof", "left_hip_roll_joint_dof", "left_hip_yaw_joint_dof",
+        "left_knee_joint_dof", "left_ankle_pitch_joint_dof", "left_ankle_roll_joint_dof",
+        "right_hip_pitch_joint_dof", "right_hip_roll_joint_dof", "right_hip_yaw_joint_dof",
+        "right_knee_joint_dof", "right_ankle_pitch_joint_dof", "right_ankle_roll_joint_dof",
+        "waist_yaw_joint_dof", "waist_roll_joint_dof", "waist_pitch_joint_dof",
+        "left_shoulder_pitch_joint_dof", "left_shoulder_roll_joint_dof",
+        "left_shoulder_yaw_joint_dof", "left_elbow_joint_dof",
+        "left_wrist_roll_joint_dof", "left_wrist_pitch_joint_dof", "left_wrist_yaw_joint_dof",
+        "right_shoulder_pitch_joint_dof", "right_shoulder_roll_joint_dof",
+        "right_shoulder_yaw_joint_dof", "right_elbow_joint_dof",
+        "right_wrist_roll_joint_dof", "right_wrist_pitch_joint_dof",
+        "right_wrist_yaw_joint_dof"]
+
+
+@dataclass
+class HumanoidUltra27DOF_CSVConfig(_EulerRootCSVConfigBase):
+    # Joint order matches the newton URDF import (depth-first) order, which is
+    # also the layout of joint_q[7:] produced by the retargeting pipeline.
+    name: str = "humanoid_ultra_27dof"
+    csv_header: ClassVar[List[str]] = [
+        "Frame",
+        "root_translateX", "root_translateY", "root_translateZ",
+        "root_rotateX", "root_rotateY", "root_rotateZ",
+        "left_hip_roll_joint_dof", "left_hip_yaw_joint_dof", "left_hip_pitch_joint_dof",
+        "left_knee_joint_dof", "left_ankle_pitch_joint_dof", "left_ankle_roll_joint_dof",
+        "right_hip_roll_joint_dof", "right_hip_yaw_joint_dof", "right_hip_pitch_joint_dof",
+        "right_knee_joint_dof", "right_ankle_pitch_joint_dof", "right_ankle_roll_joint_dof",
+        "waist_yaw_joint_dof",
+        "left_shoulder_pitch_joint_dof", "left_shoulder_roll_joint_dof",
+        "left_shoulder_yaw_joint_dof", "left_elbow_joint_dof",
+        "left_wrist_yaw_joint_dof", "left_wrist_roll_joint_dof", "left_wrist_pitch_joint_dof",
+        "right_shoulder_pitch_joint_dof", "right_shoulder_roll_joint_dof",
+        "right_shoulder_yaw_joint_dof", "right_elbow_joint_dof",
+        "right_wrist_yaw_joint_dof", "right_wrist_roll_joint_dof", "right_wrist_pitch_joint_dof"]
+
+
+_ROBOT_CSV_CONFIGS = {
+    "unitree_g1": UnitreeG129DOF_CSVConfig,
+    "humanoid_ultra": HumanoidUltra27DOF_CSVConfig,
+}
+
+
+def get_csv_config(robot_type: str) -> RobotCSVConfig:
+    """
+    Return the CSV config associated with a robot type string.
+
+    Args:
+        robot_type (str): Robot type name, e.g. "unitree_g1".
+
+    Returns:
+        RobotCSVConfig: The CSV configuration instance for the robot.
+
+    Raises:
+        ValueError: If no CSV config is registered for the robot type.
+    """
+    try:
+        return _ROBOT_CSV_CONFIGS[robot_type]()
+    except KeyError:
+        allowed = ", ".join(_ROBOT_CSV_CONFIGS.keys())
+        raise ValueError(f"No CSV config for robot type [{robot_type}]. Allowed values: {allowed}") from None
 
 
 def load_csv(file_path: str, fps: float = 120.0, csv_config: RobotCSVConfig = UnitreeG129DOF_CSVConfig()) -> CSVAnimationBuffer:
