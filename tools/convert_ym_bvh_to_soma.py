@@ -756,6 +756,72 @@ def initial_motion_reference_row(data: BVHData, seconds: float) -> list[float]:
     return row
 
 
+def normalize_root_heading(
+    source: BVHData,
+    source_reference_row: list[float],
+) -> tuple[BVHData, list[float], float]:
+    """Rotate root orientation and trajectory so reference local +Z faces world +Z."""
+    roots = [joint for joint in source.joints if joint.parent is None]
+    if len(roots) != 1:
+        raise ValueError(f"{source.path}: expected exactly one source root joint")
+    root = roots[0]
+
+    reference_rotation = local_rotation_matrix(source_reference_row, root)
+    reference_forward = mat_vec_mul(reference_rotation, [0.0, 0.0, 1.0])
+    horizontal_length = math.hypot(reference_forward[0], reference_forward[2])
+    if horizontal_length < 1e-6:
+        raise ValueError(
+            f"{source.path}: cannot normalize root heading because the reference "
+            "root +Z axis is vertical"
+        )
+
+    heading_degrees = math.degrees(
+        math.atan2(reference_forward[0], reference_forward[2])
+    )
+    correction_degrees = -heading_degrees
+    heading_correction = axis_rotation_matrix("Y", correction_degrees)
+    reference_position = local_position_values(source_reference_row, root)
+
+    def transform_row(row: list[float]) -> list[float]:
+        transformed = list(row)
+        transformed_rotation = matmul(
+            heading_correction,
+            local_rotation_matrix(row, root),
+        )
+        transformed_rotation_values = matrix_to_zyx_euler(transformed_rotation)
+        transformed_position = vec_add(
+            reference_position,
+            mat_vec_mul(
+                heading_correction,
+                vec_sub(local_position_values(row, root), reference_position),
+            ),
+        )
+
+        rotation_index = 0
+        for offset, channel in enumerate(root.channels):
+            channel_index = root.channel_start + offset
+            if "rotation" in channel:
+                transformed[channel_index] = transformed_rotation_values[rotation_index]
+                rotation_index += 1
+            elif channel == "Xposition":
+                transformed[channel_index] = transformed_position[0]
+            elif channel == "Yposition":
+                transformed[channel_index] = transformed_position[1]
+            elif channel == "Zposition":
+                transformed[channel_index] = transformed_position[2]
+        return transformed
+
+    normalized_source = BVHData(
+        path=source.path,
+        header_lines=source.header_lines,
+        joints=source.joints,
+        frames=source.frames,
+        frame_time=source.frame_time,
+        motion_rows=[transform_row(row) for row in source.motion_rows],
+    )
+    return normalized_source, transform_row(source_reference_row), correction_degrees
+
+
 def first_finger_palm_joint(target_joint_name: str) -> str | None:
     for side in ("Left", "Right"):
         prefix = f"{side}Hand"
@@ -1471,6 +1537,7 @@ def summarize_conversion(
     end_effector_ik: bool,
     source_reference: BVHData | None,
     source_reference_seconds: float,
+    root_heading_correction_degrees: float | None,
 ) -> None:
     used_sources = {name for name in mapping.values() if name is not None}
     if palm_fold:
@@ -1515,6 +1582,14 @@ def summarize_conversion(
         )
         print(f"  source reference window: first {source_reference_seconds:g}s averaged")
         print(f"  experimental end-effector IK: {'enabled' if end_effector_ik else 'disabled'}")
+    if root_heading_correction_degrees is None:
+        print("  root heading normalization: disabled")
+    else:
+        print(
+            "  root heading normalization: "
+            f"Y {root_heading_correction_degrees:+.3f} deg to world +Z "
+            "(orientation + X/Z trajectory)"
+        )
     print(f"  reference-filled target joints ({len(zero_targets)}): {', '.join(zero_targets)}")
     print(f"  ignored source joints ({len(ignored_sources)}): {', '.join(ignored_sources)}")
 
@@ -1561,6 +1636,7 @@ def convert_file(
     pre_ik_orientation_offsets: dict[str, list[list[float]]],
     post_ik_orientation_offsets: dict[str, list[list[float]]],
     post_ik_orientation_offset_space: str,
+    normalize_root_heading_enabled: bool,
     single_file: bool,
 ) -> None:
     source = parse_bvh(source_path)
@@ -1573,6 +1649,12 @@ def convert_file(
         if source_reference is not None
         else initial_motion_reference_row(source, source_reference_seconds)
     )
+    root_heading_correction_degrees: float | None = None
+    if normalize_root_heading_enabled:
+        source, source_reference_row, root_heading_correction_degrees = normalize_root_heading(
+            source,
+            source_reference_row,
+        )
     out_path = output_path_for(source_path, input_root, output_root, single_file)
 
     if out_path.exists() and not overwrite and not dry_run:
@@ -1590,6 +1672,7 @@ def convert_file(
         end_effector_ik,
         source_reference,
         source_reference_seconds,
+        root_heading_correction_degrees,
     )
 
     if dry_run:
@@ -1680,6 +1763,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--normalize-root-heading",
+        action="store_true",
+        help=(
+            "Rotate the source root orientation and its X/Z trajectory by the "
+            "same reference-pose heading correction so local +Z faces world +Z."
+        ),
+    )
+    parser.add_argument(
         "--no-palm-fold",
         action="store_true",
         help="Do not fold LeftHandPalm/RightHandPalm rotations into finger roots.",
@@ -1765,6 +1856,7 @@ def main() -> int:
                 pre_ik_orientation_offsets=pre_ik_orientation_offsets,
                 post_ik_orientation_offsets=post_ik_orientation_offsets,
                 post_ik_orientation_offset_space=post_ik_orientation_offset_space,
+                normalize_root_heading_enabled=args.normalize_root_heading,
                 single_file=single_file,
             )
     except Exception as exc:

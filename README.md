@@ -83,6 +83,49 @@ This repo includes 10 sample BVH/CSV pairs in `assets/motions/` for immediate te
 
 For large-scale motion data, see the [SEED dataset](https://huggingface.co/datasets/bones-studio/seed) (Skeletal Everyday Embodiment Dataset) published by [Bones Studio](https://huggingface.co/bones-studio). SEED provides a large-scale collection of human motions on the SOMA uniform-proportion skeleton, which is the expected input format for this tool. The G1 robot motion data included in SEED was retargeted using SOMA Retargeter.
 
+### Convert YM/FZ BVH to SOMA
+
+Use `tools/convert_ym_bvh_to_soma.py` to convert a YM/FZ 57-joint BVH file to the SOMA 78-joint layout. Run the following command from the repository root:
+
+```bash
+python3 tools/convert_ym_bvh_to_soma.py \
+  --file "mocap/Data_2026-07-10_10-30-50.bvh" \
+  --output "mocap_soma/july_heading_normalized.bvh" \
+  --soma-geometry \
+  --no-orientation-offsets \
+  --source-reference-seconds 1.0 \
+  --normalize-root-heading \
+  --global-bind-offset \
+  --overwrite
+```
+
+The options used above are:
+
+| Option | Purpose |
+|--------|---------|
+| `--file` | Selects one source BVH file. Quote the path when it contains spaces. |
+| `--output` | Sets the converted SOMA BVH path. Parent directories are created automatically. |
+| `--soma-geometry` | Uses the SOMA template bone geometry instead of the source bone offsets. |
+| `--no-orientation-offsets` | Disables the fixed adjustments in `tools/soma_effector_orientation_offsets.json`. |
+| `--source-reference-seconds 1.0` | Averages the first second of the source motion as its reference pose. |
+| `--normalize-root-heading` | Rotates the reference root heading to world `+Z` and applies the same correction to the root X/Z trajectory. This keeps facing direction and travel direction consistent across capture sessions. |
+| `--global-bind-offset` | Aligns source and SOMA joint coordinate frames using fixed global bind-pose offsets. |
+| `--overwrite` | Replaces the output file if it already exists. Omit this option to protect an existing result. |
+
+The first second should contain a stable pose with the performer facing the intended forward direction. If the motion starts immediately, provide a compatible static YM/FZ reference BVH instead:
+
+```bash
+python3 tools/convert_ym_bvh_to_soma.py \
+  --file "mocap/input.bvh" \
+  --output "mocap_soma/output.bvh" \
+  --soma-geometry \
+  --source-reference "mocap/static_reference.bvh" \
+  --normalize-root-heading \
+  --global-bind-offset
+```
+
+Use `--dry-run` first to validate the skeleton, frame count, reference settings, and output path without writing a file.
+
 ## Quick Start
 
 > When using **uv** (Method 2), replace `python` with `uv run` in the commands below.
